@@ -1,0 +1,185 @@
+// -*- C++ -*-
+// $Id: LorentzRotation.icc 6497 2000-05-08 13:04:32Z katayama $
+// ---------------------------------------------------------------------------
+//
+// This file is a part of the CLHEP - a Class Library for High Energy Physics.
+// 
+// This is the definitions of the inline member functions of the
+// HepLorentzRotation class
+//
+
+
+inline HepLorentzRotation::HepLorentzRotation()
+  : mxx(1.0), mxy(0.0), mxz(0.0), mxt(0.0),
+    myx(0.0), myy(1.0), myz(0.0), myt(0.0),
+    mzx(0.0), mzy(0.0), mzz(1.0), mzt(0.0),
+    mtx(0.0), mty(0.0), mtz(0.0), mtt(1.0) {}
+
+inline HepLorentzRotation::HepLorentzRotation(const HepRotation & r)
+  : mxx(r.xx()), mxy(r.xy()), mxz(r.xz()), mxt(0.0),
+    myx(r.yx()), myy(r.yy()), myz(r.yz()), myt(0.0),
+    mzx(r.zx()), mzy(r.zy()), mzz(r.zz()), mzt(0.0),
+    mtx(0.0),    mty(0.0),    mtz(0.0),    mtt(1.0) {}
+
+inline HepLorentzRotation::HepLorentzRotation(const HepLorentzRotation & r)
+  : mxx(r.mxx), mxy(r.mxy), mxz(r.mxz), mxt(r.mxt),
+    myx(r.myx), myy(r.myy), myz(r.myz), myt(r.myt),
+    mzx(r.mzx), mzy(r.mzy), mzz(r.mzz), mzt(r.mzt),
+    mtx(r.mtx), mty(r.mty), mtz(r.mtz), mtt(r.mtt) {}
+
+inline HepLorentzRotation::HepLorentzRotation( 
+  double rxx, double rxy, double rxz, double rxt,
+  double ryx, double ryy, double ryz, double ryt,
+  double rzx, double rzy, double rzz, double rzt,
+  double rtx, double rty, double rtz, double rtt)
+  : mxx(rxx), mxy(rxy), mxz(rxz), mxt(rxt),
+    myx(ryx), myy(ryy), myz(ryz), myt(ryt),
+    mzx(rzx), mzy(rzy), mzz(rzz), mzt(rzt),
+    mtx(rtx), mty(rty), mtz(rtz), mtt(rtt) {}
+
+inline HepLorentzRotation::HepLorentzRotation(double bx,
+                                              double by,
+                                              double bz)
+{
+  setBoost(bx, by, bz);
+}
+
+inline HepLorentzRotation::HepLorentzRotation(const Hep3Vector & p) {
+  setBoost(p.x(), p.y(), p.z());
+}
+
+inline double HepLorentzRotation::xx() const { return mxx; }
+inline double HepLorentzRotation::xy() const { return mxy; }
+inline double HepLorentzRotation::xz() const { return mxz; }
+inline double HepLorentzRotation::xt() const { return mxt; }
+inline double HepLorentzRotation::yx() const { return myx; }
+inline double HepLorentzRotation::yy() const { return myy; }
+inline double HepLorentzRotation::yz() const { return myz; }
+inline double HepLorentzRotation::yt() const { return myt; }
+inline double HepLorentzRotation::zx() const { return mzx; }
+inline double HepLorentzRotation::zy() const { return mzy; }
+inline double HepLorentzRotation::zz() const { return mzz; }
+inline double HepLorentzRotation::zt() const { return mzt; }
+inline double HepLorentzRotation::tx() const { return mtx; }
+inline double HepLorentzRotation::ty() const { return mty; }
+inline double HepLorentzRotation::tz() const { return mtz; }
+inline double HepLorentzRotation::tt() const { return mtt; }
+
+inline HepLorentzRotation &
+HepLorentzRotation::operator = (const HepLorentzRotation & r) {
+  mxx = r.mxx; mxy = r.mxy; mxz = r.mxz; mxt = r.mxt;
+  myx = r.myx; myy = r.myy; myz = r.myz; myt = r.myt;
+  mzx = r.mzx; mzy = r.mzy; mzz = r.mzz; mzt = r.mzt;
+  mtx = r.mtx; mty = r.mty; mtz = r.mtz; mtt = r.mtt;
+  return *this;
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::operator = (const HepRotation & r) {
+  mxx = r.xx(); mxy = r.xy(); mxz = r.xz(); mxt = 0.0;
+  myx = r.yx(); myy = r.yy(); myz = r.yz(); myt = 0.0;
+  mzx = r.zx(); mzy = r.zy(); mzz = r.zz(); mzt = 0.0;
+  mtx = 0.0;    mty = 0.0;    mtz = 0.0;    mtt = 1.0;
+  return *this;
+}
+
+inline bool
+HepLorentzRotation::operator == (const HepLorentzRotation & r) const {
+  return (mxx == r.xx() && mxy == r.xy() && mxz == r.xz() && mxt == r.xt() && 
+          myx == r.yx() && myy == r.yy() && myz == r.yz() && myt == r.yt() && 
+          mzx == r.zx() && mzy == r.zy() && mzz == r.zz() && mzt == r.zt() && 
+          mtx == r.tx() && mty == r.ty() && mtz == r.tz() && mtt == r.tt())
+  ? true : false;
+}
+
+inline bool
+HepLorentzRotation::operator != (const HepLorentzRotation & r) const {
+  return (mxx != r.xx() || mxy != r.xy() || mxz != r.xz() || mxt != r.xt() || 
+          myx != r.yx() || myy != r.yy() || myz != r.yz() || myt != r.yt() || 
+          mzx != r.zx() || mzy != r.zy() || mzz != r.zz() || mzt != r.zt() || 
+          mtx != r.tx() || mty != r.ty() || mtz != r.tz() || mtt != r.tt())
+  ? true : false;
+}
+
+inline bool HepLorentzRotation::isIdentity() const {
+  return (mxx == 1.0 && mxy == 0.0 && mxz == 0.0 && mxt == 0.0 && 
+          myx == 0.0 && myy == 1.0 && myz == 0.0 && myt == 0.0 && 
+          mzx == 0.0 && mzy == 0.0 && mzz == 1.0 && mzt == 0.0 && 
+          mtx == 0.0 && mty == 0.0 && mtz == 0.0 && mtt == 1.0)
+  ? true : false;
+}
+
+           
+inline HepLorentzVector
+HepLorentzRotation::vectorMultiplication(const HepLorentzVector & p) const {
+  return HepLorentzVector(xx()*p.x()+xy()*p.y()+xz()*p.z()+xt()*p.t(),
+                	  yx()*p.x()+yy()*p.y()+yz()*p.z()+yt()*p.t(),
+			  zx()*p.x()+zy()*p.y()+zz()*p.z()+zt()*p.t(),
+			  tx()*p.x()+ty()*p.y()+tz()*p.z()+tt()*p.t());
+}
+
+inline HepLorentzVector
+HepLorentzRotation::operator * (const HepLorentzVector & p) const {
+  return vectorMultiplication(p);
+}
+
+inline HepLorentzRotation
+HepLorentzRotation::operator * (const HepLorentzRotation & m) const {
+  return matrixMultiplication(m);
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::operator *= (const HepLorentzRotation & m) {
+  return *this = matrixMultiplication(m);
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::transform(const HepLorentzRotation & m) {
+  return *this = m.matrixMultiplication(*this);
+}
+
+inline HepLorentzRotation HepLorentzRotation::inverse() const {
+  return HepLorentzRotation( xx(),  yx(),  zx(), -tx(),
+                             xy(),  yy(),  zy(), -ty(),
+                             xz(),  yz(),  zz(), -tz(),
+                            -xt(), -yt(), -zt(),  tt());
+}
+
+inline HepLorentzRotation & HepLorentzRotation::invert() {
+  return *this = inverse();
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::boost(double bx, double by, double bz) {
+  return transform(HepLorentzRotation(bx, by, bz));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::boost(const Hep3Vector & b) {
+  return transform(HepLorentzRotation(b));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::rotateX(double angle) {
+  return transform(HepRotation().rotateX(angle));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::rotateY(double angle) {
+  return transform(HepRotation().rotateY(angle));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::rotateZ(double angle) {
+  return transform(HepRotation().rotateZ(angle));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::rotate(double angle, const Hep3Vector & axis) {
+  return transform(HepRotation().rotate(angle, axis));
+}
+
+inline HepLorentzRotation &
+HepLorentzRotation::rotate(double angle, const Hep3Vector * axis) {
+  return transform(HepRotation().rotate(angle, axis));
+}
