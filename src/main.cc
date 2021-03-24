@@ -117,6 +117,26 @@ HepLorentzVector generate_lorentz(double p_mag, double en, std::default_random_e
     return HepLorentzVector(x * p_mag / len, y * p_mag / len, z * p_mag / len, en);
 }
 
+Hep3Vector generate_3vector(double p_mag, std::default_random_engine &generator){
+
+  std::normal_distribution<double> distribution(0.0,1.0);
+  /*    double cost = -1 + 2 * doubleRand();
+    double sint = sqrt(1 - cost * cost);
+    double phi = 2 * const_pi * doubleRand();
+    double x = p_mag * sint * cos(phi);
+    double y = p_mag * sint * sin(phi);
+    double z = p_mag * cost;*/
+  double x = distribution(generator);
+  double y = distribution(generator);
+  double z = distribution(generator);
+  double len = sqrt(x*x + y*y + z*z);
+  if(len == 0){
+    len == 1;
+  }
+  //  std::cout << x << " " << y << " " << z << std::endl;
+    return Hep3Vector(x * p_mag / len, y * p_mag / len, z * p_mag / len);
+}
+
 Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     Hep3Vector p_vect = p.vect();
     //std::cout << "yoshino " << cos(p.vect().angle(zeta));
@@ -158,7 +178,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
 }
 
 int main(int argc, char **argv) {
-  std::string file_name = "/group/belle/bodrov/tau_lep/magnetic_field/magnetic_field_simulation/data/raw_belle_xip1_test1.root";
+  std::string file_name = "data/raw_belle_xip1_nB.root";
   TFile f(file_name.c_str(),"recreate");
     TTree t1("t1","tree with raw data from my MC");
 
@@ -185,11 +205,17 @@ int main(int argc, char **argv) {
     double p_x_e, p_y_e, p_z_e, e_e, pl_x_e, pl_y_e, pl_z_e, el_e;
     double s_x_e, s_y_e, s_z_e, s_t_e;
     double sm_x_e, sm_y_e, sm_z_e, sm_t_e;
-    double cos_p_mu_s_tau, cos_p_e_s_mu, helicity_mu, helicity_e, cos_p_mu_s_mu, cos_p_e_p_mu;
+    double cos_p_mu_s_tau, cos_p_e_s_mu, helicity_mu, helicity_e, cos_p_mu_s_mu, cos_p_e_p_mu, spin_mu_mag;
+    double cos_s_mu_PL_mu, PL_mu_mag, test;
 
     //prepare branches
     t1.Branch("helicity_e",&helicity_e,"helicity_e/D");//
+    t1.Branch("test",&test,"test/D");//
     t1.Branch("helicity_mu",&helicity_mu,"helicity_mu/D");//
+    t1.Branch("spin_mu_mag",&spin_mu_mag,"spin_mu_mag/D");//
+    t1.Branch("PL_mu_mag",&PL_mu_mag,"PL_mu_mag/D");//
+    t1.Branch("cos_s_mu_PL_mu",&cos_s_mu_PL_mu,"cos_s_mu_PL_mu/D");//
+    //    t1.Branch("spin_mu_mag",&spin_mu_mag,"spin_mu_mag/D");//
     t1.Branch("cms_energy",&cms_energy,"cms_energy/D");//
     t1.Branch("tau_energy",&tau_energy,"tau_energy/D");//
     t1.Branch("tau_p",&tau_p,"tau_p/D");//
@@ -346,14 +372,35 @@ int main(int argc, char **argv) {
 	double spin_mu_z = (-Fip(x_mu, x0_mu)  + Fap(x_mu, x0_mu) * cost_tau) / spin_denominator;
 	double spin_mu_x = Ft1(x_mu, x0_mu) * sint_tau / spin_denominator;
 	double spin_mu_y = Ft2(x_mu, x0_mu) * sint_tau / spin_denominator;
-	double spin_mu_mag = sqrt(spin_mu_x * spin_mu_x + spin_mu_y * spin_mu_y + spin_mu_z * spin_mu_z);
-	if(spin_mu_mag == 0)
-	  spin_mu_mag = 1;
+	//	double spin_mu_mag = sqrt(spin_mu_x * spin_mu_x + spin_mu_y * spin_mu_y + spin_mu_z * spin_mu_z);
+
+	Hep3Vector PL_mu_vect = spin_mu_x * axis_x + spin_mu_y * axis_y + spin_mu_z * axis_z;
+	Hep3Vector r_tmp = PL_mu_vect;	
+	
+	Hep3Vector spin_mu_vect_tmp(0,0,0);
+
+	if(PL_mu_vect.mag() != 0) {
+
+	  while((r_tmp.angle(PL_mu_vect) < const_pi / 12) || (r_tmp.angle(PL_mu_vect) > 11 * const_pi / 12))
+	    r_tmp = generate_3vector(1, generator);
+
+	  Hep3Vector PL_mu_perp = r_tmp - (r_tmp.dot(PL_mu_vect) / PL_mu_vect.mag2()) * PL_mu_vect;
+	  Hep3Vector spin_mu_perp = (sqrt(1 - PL_mu_vect.mag2()) / PL_mu_perp.mag()) * PL_mu_perp;
+       
+	  spin_mu_vect_tmp = PL_mu_vect + spin_mu_perp;
+	} else {
+	  spin_mu_vect_tmp = generate_3vector(1, generator);
+	}
+	spin_mu_mag = spin_mu_vect_tmp.mag();
+	cos_s_mu_PL_mu = cos(spin_mu_vect_tmp.angle(PL_mu_vect));
+	PL_mu_mag = PL_mu_vect.mag();
+
+	test = cos(PL_mu_vect.angle(p_mu_tau.vect()));
 
 	int spin_mu_projection = 1 - 2 * (rand() % 2);
 
-	Hep3Vector spin_mu_vect_tmp = axis_x * spin_mu_projection * (spin_mu_x/spin_mu_mag) + 
-	  axis_y * spin_mu_projection * (spin_mu_y/spin_mu_mag) + axis_z * spin_mu_projection * (spin_mu_z/spin_mu_mag);
+	//	Hep3Vector spin_mu_vect_tmp = axis_x * spin_mu_projection * (spin_mu_x/spin_mu_mag) + 
+	//  axis_y * spin_mu_projection * (spin_mu_y/spin_mu_mag) + axis_z * spin_mu_projection * (spin_mu_z/spin_mu_mag);
 
 	/*	HepLorentzVector spin_mu(spin_mu_projection * p_mu_tau.x()/p_mu_tau.vect().mag(), 
 				 spin_mu_projection * p_mu_tau.y()/p_mu_tau.vect().mag(), 
@@ -379,12 +426,12 @@ int main(int argc, char **argv) {
 
 
 	
-	double coeff_tau = w_mu*w_mu*w_mu*w_mu / (m_tau*m_tau*m_tau*m_tau) * 24;
+	double coeff_tau = w_mu*w_mu*w_mu*w_mu / (m_tau*m_tau*m_tau*m_tau) * 24 * 2;
         double width_tau = coeff_tau * sqrt(x_mu * x_mu - x0_mu * x0_mu) 
-	  * (Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau +
+	  * (Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau);/* +
 	     (-Fip(x_mu, x0_mu)  + Fap(x_mu, x0_mu) * cost_tau) * spin_mu.vect().dot(axis_z) 
 	     + Ft1(x_mu, x0_mu) * sint_tau * spin_mu.vect().dot(axis_x)
-	     + Ft2(x_mu, x0_mu) * sint_tau * spin_mu.vect().dot(axis_y));
+	     + Ft2(x_mu, x0_mu) * sint_tau * spin_mu.vect().dot(axis_y));*/
 
         //generate decay spectrum
         if (width_tau > max_width) max_width = width_tau;
