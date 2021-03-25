@@ -9,6 +9,7 @@
 
 class particle {
 public:
+ particle() : p_(HepLorentzVector(0,0,0,0)), s_(HepLorentzVector(0,0,0,0)) {}
     particle(HepLorentzVector p, HepLorentzVector s) : p_(p), s_(s) {}
     ~particle(){}
     HepLorentzVector p(){

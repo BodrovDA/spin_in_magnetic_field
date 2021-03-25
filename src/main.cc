@@ -29,9 +29,10 @@
 
 // include custom libraries
 #include "constants.h"
-#include "MichelFunctions.icc"
+//#include "MichelFunctions.icc"
 #include "GenFunctions.h"
 #include "SpinParticleMagField.h"
+#include "Event.h"
 
 //using namespace std;
 
@@ -44,57 +45,22 @@ inline double gauss_width(double x, double width){
     return exp(- x * x / 2 / width / width);
 }
 
-/*Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
-    Hep3Vector p_vect = p.vect();
-    //std::cout << "yoshino " << cos(p.vect().angle(zeta));
-    double kappa = 1 / p_vect.perp();
-    double tanlam = p_vect.z() * kappa;
-    double alpha = 10000. / 3. / 10. / BfieldB.mag();
-    double radius = alpha / kappa;
-    //std::cout << "homura, r: " << radius << " a: " << alpha << " k: " << kappa << " pz: " << p_vect.z() << " pt: " << p_vect.perp() << " p: " << p_vect.mag() << std::endl;
-    double distance1 = 0;
-    Hep3Vector sperp1(zeta.x(), zeta.y(), 0);
-    double time = 10000 * dt;
-   /* while(true){
-        double tmp_time = decay_time * doubleRand();
-        double rand = doubleRand();
-        if(rand < exp(-tmp_time / decay_time * m_mu / p.e())){
-            time = tmp_time;
-            break;
-        }
-    }*/
-    //time_dec = time;
-    //int max_i = 0;
-/*  for(int i = 0; i < time_dec / dt; ++i){
-        distance1 += p_vect.mag() / p.e() * 3E10 * dt;
-        Hep3Vector dzeta = 2 * magnb * m_mu / p.e() * zeta.cross(BfieldB) * dt * 6.30253;
-        zeta += dzeta;
-        Hep3Vector dp = 2 * magnb * m_mu / p.e() * p_vect.cross(BfieldB) * dt * 6.30253;
-        p_vect += dp;
-        //max_i = i;
-        //std::cout << "ashigara " << dzeta.mag() / zeta.perp() << " " << dp.mag() / p_vect.perp() << " " << cos(p_vect.angle(zeta)) << std::endl;
-    }
-    Hep3Vector perp1(p.vect().x(), p.vect().y(), 0);
-    Hep3Vector perp2(p_vect.x(), p_vect.y(), 0);
-    Hep3Vector sperp2(zeta.x(), zeta.y(), 0);
-    //    std::cout << "yugumo " << cos(perp1.angle(perp2)) << " " << cos(sperp1.angle(sperp2)) << std::endl;
-    double distance2 = sqrt(radius * radius * (1 + tanlam * tanlam) * perp1.angle(perp2) * perp1.angle(perp2));
-    //std::cout << "hitagi " << distance1 << " " << distance2 << " " << distance1 / distance2 << std::endl;
-    //std::cout << "hanekawa " << max_i << std::endl;
-    return p_vect;
-    }*/
 
 int main(int argc, char **argv) {
   std::string file_name = "data/raw_belle_xip1_nB.root";
   TFile f(file_name.c_str(),"recreate");
-    TTree t1("t1","tree with raw data from my MC");
+  TTree t1("t1","tree with raw data from my MC");
 
-    std::default_random_engine generator;
-    /* initialize random seed: */
-    srand(time(NULL));
-    double cms_energy = 10.58; //3.56;//3.7;//10.58;
-    double tau_energy = cms_energy / 2;
-    double tau_p = sqrt(tau_energy * tau_energy - m_tau * m_tau);
+  double elec = 8.0, posi = 3.5;
+  HepLorentzVector beam(elec*sin(0.022), 0.,(elec*cos(0.022)-posi), (elec+posi));
+
+  
+  std::default_random_engine generator;
+  /* initialize random seed: */
+  srand(time(NULL));
+  double cms_energy = 10.58; //3.56;//3.7;//10.58;
+  double tau_energy = cms_energy / 2;
+  double tau_p = sqrt(tau_energy * tau_energy - m_tau * m_tau);
 
     //prepare tree variables
     double bfield, time_mu, timel_mu;
@@ -191,9 +157,6 @@ int main(int argc, char **argv) {
     t1.Branch("sm_t_e",&sm_t_e,"sm_t_e/D");//
 
 
-    //std::cout << Fis(1, 0) << " "  << Fas(1, 0) << std::endl; 
-    //std::cout << Fis(0.118, 0.118) << " "  << Fas(0.118, 0.118) << std::endl; 
-    //std::cout << Fis(1, 0.118) << " "  << Fas(1, 0.118) << std::endl; 
 
     const int charge = 1;
     int j = 0;
@@ -203,23 +166,22 @@ int main(int argc, char **argv) {
     double max_width_mu = 0;
 
     //histogram for time dependence
-    const double time_limit = 1.E-8;
+    const double time_limit = 1.E-7;
     const double time_limit_lab = 1.E-8;
 
     for (int i = 0; i < 1.E7; ++i) {
-        double time = doubleRand() * time_limit;
-        double func = exp(-time / decay_time);// / decay_time;
-        double func_rand = doubleRand();// / decay_time;
-        if(func_rand > func){
-            continue;
-        }
+      Event ev(beam, -1, generator);
+      ev.generate_time(time_limit);
+      double time = ev.time_mu();
         time_mu = time;
 
         if (i % 100000 == 0) std::cout << "Event number " << i << std::endl;
         //generate tau lepton
-        HepLorentzVector p_tau_cms = generate_lorentz(tau_p, tau_energy, generator);
-        HepLorentzVector spin_tau = generate_lorentz(1, 0, generator);
-        particle tau(p_tau_cms, spin_tau);
+	ev.generate_tau();
+	particle tau = ev.tau();
+	HepLorentzVector p_tau_cms = tau.p();
+	HepLorentzVector spin_tau = tau.s();
+
         
 	//~~~~~~~~~~~~~~~~~
         p_x_tau = p_tau_cms.vect().x();
@@ -232,10 +194,6 @@ int main(int argc, char **argv) {
         s_t_tau = spin_tau.t();
         //~~~~~~~~~~~~~~~~~
 
-	double elec = 8.0, posi = 3.5;
-	HepLorentzVector beam(elec*sin(0.022)/2., 0.,(elec*cos(0.022)-posi)/2., (elec+posi)/2.);
-        //HepLorentzVector beam(0., 0., 0., (elec+posi)/2.);
-        //HepLorentzVector beam(0., 0., 0., cms_energy);
         HepLorentzVector p_tau = p_tau_cms;
         p_tau.boost(beam.boostVector());
         //~~~~~~~~~~~~~~~~~
@@ -246,9 +204,10 @@ int main(int argc, char **argv) {
         //~~~~~~~~~~~~~~~~~
 
         //generate muon
-        double mu_energy = mu_energy_min + doubleRand() * (w_mu - mu_energy_min);
-        double mu_p = sqrt(mu_energy * mu_energy - m_mu * m_mu);
-        HepLorentzVector p_mu_tau = generate_lorentz(mu_p, mu_energy, generator);
+	ev.generate_mu();
+        particle mu = ev.mu();
+	HepLorentzVector p_mu_tau = mu.p();
+	HepLorentzVector spin_mu = mu.s();
         //~~~~~~~~~~~~~~~~~
         p_x_mu = p_mu_tau.vect().x();
         p_y_mu = p_mu_tau.vect().y();
@@ -260,67 +219,17 @@ int main(int argc, char **argv) {
         //s_t_mu = spin_mu.t();
         //~~~~~~~~~~~~~~~~~
 
-        Hep3Vector axis_z = p_mu_tau.vect( ) * (1. / p_mu_tau.vect().mag());
-        Hep3Vector axis_y = p_mu_tau.vect().cross(spin_tau.vect()) * (1. / p_mu_tau.vect().cross(spin_tau.vect()).mag());
-        Hep3Vector axis_x = axis_y.cross(axis_z);
-
-        
-        //double width_t = (q_t.mag2() * p_t.dot(k_t) + 2 * q_t.dot(p_t) * q_t.dot(k_t)) * p_mu_tau.vect().mag2()
-        //        / p_mu_tau.e() / (m_tau * m_tau * m_tau * m_tau * m_tau);
 
         //calculate tau decay width
         double cost_tau = cos(p_mu_tau.vect().angle(spin_tau.vect()));
         double sint_tau = sqrt(1 - cost_tau * cost_tau);
-        double x_mu = mu_energy / w_mu;
+        double x_mu = p_mu_tau.e() / w_mu;
         double x0_mu = m_mu / w_mu;
 
-
-	double spin_denominator = Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau;
-	double spin_mu_z = (-Fip(x_mu, x0_mu)  + Fap(x_mu, x0_mu) * cost_tau) / spin_denominator;
-	double spin_mu_x = Ft1(x_mu, x0_mu) * sint_tau / spin_denominator;
-	double spin_mu_y = Ft2(x_mu, x0_mu) * sint_tau / spin_denominator;
-	//	double spin_mu_mag = sqrt(spin_mu_x * spin_mu_x + spin_mu_y * spin_mu_y + spin_mu_z * spin_mu_z);
-
-	Hep3Vector PL_mu_vect = spin_mu_x * axis_x + spin_mu_y * axis_y + spin_mu_z * axis_z;
-	Hep3Vector r_tmp = PL_mu_vect;	
-	
-	Hep3Vector spin_mu_vect_tmp(0,0,0);
-
-	if(PL_mu_vect.mag() != 0) {
-
-	  while((r_tmp.angle(PL_mu_vect) < const_pi / 12) || (r_tmp.angle(PL_mu_vect) > 11 * const_pi / 12))
-	    r_tmp = generate_3vector(1, generator);
-
-	  Hep3Vector PL_mu_perp = r_tmp - (r_tmp.dot(PL_mu_vect) / PL_mu_vect.mag2()) * PL_mu_vect;
-	  Hep3Vector spin_mu_perp = (sqrt(1 - PL_mu_vect.mag2()) / PL_mu_perp.mag()) * PL_mu_perp;
-       
-	  spin_mu_vect_tmp = PL_mu_vect + spin_mu_perp;
-	} else {
-	  spin_mu_vect_tmp = generate_3vector(1, generator);
-	}
-	spin_mu_mag = spin_mu_vect_tmp.mag();
-	cos_s_mu_PL_mu = cos(spin_mu_vect_tmp.angle(PL_mu_vect));
-	PL_mu_mag = PL_mu_vect.mag();
-
-	//	test = cos(PL_mu_vect.angle(p_mu_tau.vect()));
-
-	int spin_mu_projection = 1 - 2 * (rand() % 2);
-
-	//	Hep3Vector spin_mu_vect_tmp = axis_x * spin_mu_projection * (spin_mu_x/spin_mu_mag) + 
-	//  axis_y * spin_mu_projection * (spin_mu_y/spin_mu_mag) + axis_z * spin_mu_projection * (spin_mu_z/spin_mu_mag);
-
-	/*	HepLorentzVector spin_mu(spin_mu_projection * p_mu_tau.x()/p_mu_tau.vect().mag(), 
-				 spin_mu_projection * p_mu_tau.y()/p_mu_tau.vect().mag(), 
-				 spin_mu_projection * p_mu_tau.z()/p_mu_tau.vect().mag(), 0);*/
-	HepLorentzVector spin_mu(spin_mu_vect_tmp, 0);
-	cos_p_mu_s_mu = cos(spin_mu.vect().angle(p_mu_tau));
-
-	particle mu(p_mu_tau, spin_mu);
-	//std::cout << spin_mu_projection << std::endl;
-	helicity_mu = spin_mu_projection;
+	cos_p_mu_s_mu = cos(spin_mu.vect().angle(p_mu_tau.vect()));
 
         HepLorentzVector spin_mu_tau(spin_mu.vect() + p_mu_tau.vect().dot(spin_mu.vect()) / m_mu /
-        (m_mu + mu_energy) * p_mu_tau.vect(), p_mu_tau.vect().dot(spin_mu.vect()) / m_mu);
+				     (m_mu + p_mu_tau.e()) * p_mu_tau.vect(), p_mu_tau.vect().dot(spin_mu.vect()) / m_mu);
         double scal_mu1 = p_mu_tau.vect().dot(spin_mu.vect()) / p_mu_tau.vect().mag();
         double scal_mu2 = p_mu_tau.vect().dot(spin_mu_tau.vect()) 
 	  / p_mu_tau.vect().mag() / spin_mu_tau.vect().mag();
@@ -332,7 +241,7 @@ int main(int argc, char **argv) {
         //~~~~~~~~~~~~~~~~~
 
 
-	
+	//	std::cout << Fas(x_mu, x0_mu) << std::endl;
 	double coeff_tau = w_mu*w_mu*w_mu*w_mu / (m_tau*m_tau*m_tau*m_tau) * 24 * 2;
         double width_tau = coeff_tau * sqrt(x_mu * x_mu - x0_mu * x0_mu) 
 	  * (Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau);/* +
@@ -359,7 +268,7 @@ int main(int argc, char **argv) {
             //~~~~~~~~~~~~~~~~~
 
             //muon rotation in magnetic field
-            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag();
+            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag() * 0;
             timel_mu = time_dec;
 	    if(time_dec > time_limit_lab) continue;
 
