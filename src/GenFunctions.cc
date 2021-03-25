@@ -8,7 +8,7 @@ Hep3Vector generate_3vector(double p_mag, std::default_random_engine &generator)
   double z = distribution(generator);
   double len = sqrt(x*x + y*y + z*z);
   if(len == 0){
-    len == 1;
+    len = 1;
   }
   return Hep3Vector(x * p_mag / len, y * p_mag / len, z * p_mag / len);
 }
@@ -23,7 +23,7 @@ HepLorentzVector generate_lorentz(double p_mag, double en,
   double z = distribution(generator);
   double len = sqrt(x*x + y*y + z*z);
   if(len == 0){
-    len == 1;
+    len = 1;
   }
   return HepLorentzVector(x * p_mag / len, y * p_mag / len, z * p_mag / len, en);
 }

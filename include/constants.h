@@ -6,9 +6,6 @@
 // math constants
 const double const_pi = 3.1415926;
 
-// physics constants
-const double magnb = 14E9 * m_e / m_mu;
-
 // particles decay times
 const double decay_time = 2.2E-6;
 
@@ -31,7 +28,7 @@ const double xi = 1.;
 const double eta = 0;
 
 // not measured yet
-double xi_p = 1;
+const double xi_p = 1;
 const double xi_pp = xi * xi_p;   
 const double eta_pp = 0;
 const double alpha_p = 0;
@@ -47,6 +44,9 @@ const double beta = 0;
 const double a = 0;
 const double b = 4;
 const double c = 0;
+
+// physics constants
+const double magnb = 14E9 * m_e / m_mu;
 
 // magnetic field
 const Hep3Vector BfieldC(0., 0., 1.);

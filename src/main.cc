@@ -28,80 +28,23 @@
 #include "ThreeVector.h"
 
 // include custom libraries
-//#include "constants.h"
-//#include "MichelFunctions.icc"
+#include "constants.h"
+#include "MichelFunctions.icc"
 #include "GenFunctions.h"
+#include "SpinParticleMagField.h"
 
 //using namespace std;
-
-const double const_pi = 3.1415926;
-const double m_tau = 1.7769;
-const double m_mu = 0.1057; //0.00051;//0.1057;
-const double m_e = 0.00051;
-const double w_mu = (m_tau * m_tau + m_mu * m_mu) / 2 / m_tau;
-const double w_e = (m_mu * m_mu + m_e * m_e) / 2 / m_mu;
-const double mu_energy_min = m_mu;
-const double e_energy_min = m_e;
 
 //const double bfieldc = 1.0 * 10E4;
 //const double bfieldb = 1.5 * 10;
 //const double balphac = 10000. / 3. / bfieldc;
 //const double balphab = 10000. / 3. / bfieldb;
-const Hep3Vector BfieldC(0., 0., 1.);
-const Hep3Vector BfieldB(0., 0., 1.5);
-const double dt = 0.5 / 3. / 1.E10;
-const double magnb = 14E9 * m_e / m_mu;
-
-//Measured Michel parameters
-const double rho = 0.75;
-const double delta = 0.75;
-const double xi = 1.;
-const double eta = 0;
-
-// Not measured Michel parameters 
-const double rho_p = 3. / 4;
-const double delta_p = 1. / 4;
-double xi_p = 1;
-const double xi_pp = xi * xi_p;//1;
-const double eta_p = 0;
-const double eta_pp = 0;
-const double alpha_p = 0;
-const double alpha = 0;
-const double beta = 0;
-const double beta_p = 0;
-const double a = 0;
-const double b = 4;
-const double c = 0;
-const double A = 16;
-const double decay_time = 2.2E-6;
-
-
-inline double Fis(double x, double x0){
-    return x*(1 - x) + 2./9. * rho * (4*x*x - 3*x - x0*x0) + eta*x0*(1 - x);
-}
-inline double Fas(double x, double x0){
-  return (1. / 3.) * xi * sqrt(x*x - x0*x0) * ((1 - x) + 2. / 3. * delta * (4 * x - 4 + sqrt(1 - x0 * x0)));
-}
-inline double Fip(double x, double x0){
-    return 1./54 * sqrt(x*x - x0*x0) * (9*xi_p*(-2*x + 2 + sqrt(1 - x0*x0)) + 4*xi*(delta - 3./4) 
-					* (4*x - 4 + sqrt(1 - x0*x0)));
-}
-inline double Fap(double x, double x0){
-      return 1./6 * (xi_pp*(2*x*x - x - x0*x0) + 4*(rho - 3./4)*(4*x*x - 3*x - x0*x0) + 
-		     2*eta_pp*(1 - x)*x0);
-}
-inline double Ft1(double x, double x0){
-  return 1./12 * (-2*(xi_pp + 12*(rho - 3./4))*(1 - x)*x0 - 3*eta*(x*x - x0*x0) + eta_pp*(-3*x*x + 4*x - x0*x0));
-}
-inline double Ft2(double x, double x0){
-  return 1./3 * sqrt(x*x - x0*x0) * (3*(1 - x)*alpha_p/A + 2*sqrt(1 - x0*x0)*beta_p/A);
-}
 
 inline double gauss_width(double x, double width){
     return exp(- x * x / 2 / width / width);
 }
 
-Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
+/*Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     Hep3Vector p_vect = p.vect();
     //std::cout << "yoshino " << cos(p.vect().angle(zeta));
     double kappa = 1 / p_vect.perp();
@@ -122,7 +65,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     }*/
     //time_dec = time;
     //int max_i = 0;
-    for(int i = 0; i < time_dec / dt; ++i){
+/*  for(int i = 0; i < time_dec / dt; ++i){
         distance1 += p_vect.mag() / p.e() * 3E10 * dt;
         Hep3Vector dzeta = 2 * magnb * m_mu / p.e() * zeta.cross(BfieldB) * dt * 6.30253;
         zeta += dzeta;
@@ -139,7 +82,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     //std::cout << "hitagi " << distance1 << " " << distance2 << " " << distance1 / distance2 << std::endl;
     //std::cout << "hanekawa " << max_i << std::endl;
     return p_vect;
-}
+    }*/
 
 int main(int argc, char **argv) {
   std::string file_name = "data/raw_belle_xip1_nB.root";
@@ -260,7 +203,7 @@ int main(int argc, char **argv) {
     double max_width_mu = 0;
 
     //histogram for time dependence
-    const double time_limit = 1.E-6;
+    const double time_limit = 1.E-8;
     const double time_limit_lab = 1.E-8;
 
     for (int i = 0; i < 1.E7; ++i) {
@@ -416,7 +359,7 @@ int main(int argc, char **argv) {
             //~~~~~~~~~~~~~~~~~
 
             //muon rotation in magnetic field
-            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag() * 0;
+            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag();
             timel_mu = time_dec;
 	    if(time_dec > time_limit_lab) continue;
 
