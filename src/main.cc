@@ -2,6 +2,7 @@
 // Created by Denis Bodrov on 2020-01-24.
 //
 
+// include standard c++ libraries
 #include <string>
 #include <iostream>
 #include <cstdlib>
@@ -9,7 +10,7 @@
 #include <cmath>
 #include <random>
 
-
+// include cern root libraries
 #include <TH1F.h>
 #include <TF1.h>
 #include <TH2F.h>
@@ -20,6 +21,8 @@
 #include <TTree.h>
 //#include <TBranch.h>
 
+
+// include CLHep
 #include "Particle.h"
 #include "LorentzVector.h"
 #include "ThreeVector.h"
@@ -170,7 +173,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     Hep3Vector perp1(p.vect().x(), p.vect().y(), 0);
     Hep3Vector perp2(p_vect.x(), p_vect.y(), 0);
     Hep3Vector sperp2(zeta.x(), zeta.y(), 0);
-    //std::cout << "yugumo " << cos(perp1.angle(perp2)) << " " << cos(sperp1.angle(sperp2)) << std::endl;
+    //    std::cout << "yugumo " << cos(perp1.angle(perp2)) << " " << cos(sperp1.angle(sperp2)) << std::endl;
     double distance2 = sqrt(radius * radius * (1 + tanlam * tanlam) * perp1.angle(perp2) * perp1.angle(perp2));
     //std::cout << "hitagi " << distance1 << " " << distance2 << " " << distance1 / distance2 << std::endl;
     //std::cout << "hanekawa " << max_i << std::endl;
@@ -178,14 +181,14 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
 }
 
 int main(int argc, char **argv) {
-  std::string file_name = "data/raw_belle_xip1_nB.root";
+  std::string file_name = "data/raw_belle_xip1_B.root";
   TFile f(file_name.c_str(),"recreate");
     TTree t1("t1","tree with raw data from my MC");
 
     std::default_random_engine generator;
     /* initialize random seed: */
     srand(time(NULL));
-    double cms_energy = 10.58;//3.7;//10.58;
+    double cms_energy = 10.58; //3.56;//3.7;//10.58;
     double tau_energy = cms_energy / 2;
     double tau_p = sqrt(tau_energy * tau_energy - m_tau * m_tau);
 
@@ -296,7 +299,7 @@ int main(int argc, char **argv) {
     double max_width_mu = 0;
 
     //histogram for time dependence
-    const double time_limit = 1.E-7;
+    const double time_limit = 1.E-8;
     const double time_limit_lab = 1.E-8;
 
     for (int i = 0; i < 1.E8; ++i) {
@@ -325,8 +328,8 @@ int main(int argc, char **argv) {
         s_t_tau = spin_tau.t();
         //~~~~~~~~~~~~~~~~~
 
-        double elec = 8.0, posi = 3.5;
-        HepLorentzVector beam(elec*sin(0.022)/2., 0.,(elec*cos(0.022)-posi)/2., (elec+posi)/2.);
+	double elec = 8.0, posi = 3.5;
+	HepLorentzVector beam(elec*sin(0.022)/2., 0.,(elec*cos(0.022)-posi)/2., (elec+posi)/2.);
         //HepLorentzVector beam(0., 0., 0., (elec+posi)/2.);
         //HepLorentzVector beam(0., 0., 0., cms_energy);
         HepLorentzVector p_tau = p_tau_cms;
@@ -395,7 +398,7 @@ int main(int argc, char **argv) {
 	cos_s_mu_PL_mu = cos(spin_mu_vect_tmp.angle(PL_mu_vect));
 	PL_mu_mag = PL_mu_vect.mag();
 
-	test = cos(PL_mu_vect.angle(p_mu_tau.vect()));
+	//	test = cos(PL_mu_vect.angle(p_mu_tau.vect()));
 
 	int spin_mu_projection = 1 - 2 * (rand() % 2);
 
@@ -454,10 +457,12 @@ int main(int argc, char **argv) {
             //muon rotation in magnetic field
             double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag();
             timel_mu = time_dec;
-	    //            if(time_dec > time_limit_lab) continue;
+	    if(time_dec > time_limit_lab) continue;
 
-            //Hep3Vector p3_mu_lab_out = spin_rotation(spin_mu_vect, p_mu_lab_in, time_dec);
-            HepLorentzVector p_mu_lab_out = p_mu_lab_in;//(p3_mu_lab_out, p_mu_lab_in.e());
+            Hep3Vector p3_mu_lab_out = spin_rotation(spin_mu_vect, p_mu_lab_in, time_dec);
+            HepLorentzVector p_mu_lab_out(p3_mu_lab_out, p_mu_lab_in.e());
+	    test = cos(p3_mu_lab_out.angle(p_mu_lab_in));
+	    //HepLorentzVector p_mu_lab_out = p_mu_lab_in;//(p3_mu_lab_out, p_mu_lab_in.e());
             //~~~~~~~~~~~~~~~~~
             pl_out_x_mu = p_mu_lab_out.vect().x();
             pl_out_y_mu = p_mu_lab_out.vect().y();
@@ -531,7 +536,7 @@ int main(int argc, char **argv) {
             if (rand_mu < width_mu) {
 
                 ++j;
-		cos_p_e_p_mu = cos(p_e_mu.vect().angle(p_mu_tau.vect()));
+		cos_p_e_p_mu = cos(p_e_mu.vect().angle(p3_mu_lab_out));
                 HepLorentzVector p_e_lab = p_e_mu;
                 p_e_lab.boost(p_mu_lab_out.boostVector());
                 //~~~~~~~~~~~~~~~~~
