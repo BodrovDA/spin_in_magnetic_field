@@ -27,6 +27,11 @@
 #include "LorentzVector.h"
 #include "ThreeVector.h"
 
+// include custom libraries
+//#include "constants.h"
+//#include "MichelFunctions.icc"
+#include "GenFunctions.h"
+
 //using namespace std;
 
 const double const_pi = 3.1415926;
@@ -96,50 +101,6 @@ inline double gauss_width(double x, double width){
     return exp(- x * x / 2 / width / width);
 }
 
-inline double doubleRand(){
-    return double(rand()) / (double(RAND_MAX) + 1.0);
-}
-
-HepLorentzVector generate_lorentz(double p_mag, double en, std::default_random_engine &generator){
-
-  std::normal_distribution<double> distribution(0.0,1.0);
-  /*    double cost = -1 + 2 * doubleRand();
-    double sint = sqrt(1 - cost * cost);
-    double phi = 2 * const_pi * doubleRand();
-    double x = p_mag * sint * cos(phi);
-    double y = p_mag * sint * sin(phi);
-    double z = p_mag * cost;*/
-  double x = distribution(generator);
-  double y = distribution(generator);
-  double z = distribution(generator);
-  double len = sqrt(x*x + y*y + z*z);
-  if(len == 0){
-    len == 1;
-  }
-  //  std::cout << x << " " << y << " " << z << std::endl;
-    return HepLorentzVector(x * p_mag / len, y * p_mag / len, z * p_mag / len, en);
-}
-
-Hep3Vector generate_3vector(double p_mag, std::default_random_engine &generator){
-
-  std::normal_distribution<double> distribution(0.0,1.0);
-  /*    double cost = -1 + 2 * doubleRand();
-    double sint = sqrt(1 - cost * cost);
-    double phi = 2 * const_pi * doubleRand();
-    double x = p_mag * sint * cos(phi);
-    double y = p_mag * sint * sin(phi);
-    double z = p_mag * cost;*/
-  double x = distribution(generator);
-  double y = distribution(generator);
-  double z = distribution(generator);
-  double len = sqrt(x*x + y*y + z*z);
-  if(len == 0){
-    len == 1;
-  }
-  //  std::cout << x << " " << y << " " << z << std::endl;
-    return Hep3Vector(x * p_mag / len, y * p_mag / len, z * p_mag / len);
-}
-
 Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
     Hep3Vector p_vect = p.vect();
     //std::cout << "yoshino " << cos(p.vect().angle(zeta));
@@ -181,7 +142,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
 }
 
 int main(int argc, char **argv) {
-  std::string file_name = "data/raw_belle_xip1_B.root";
+  std::string file_name = "data/raw_belle_xip1_nB.root";
   TFile f(file_name.c_str(),"recreate");
     TTree t1("t1","tree with raw data from my MC");
 
@@ -299,10 +260,10 @@ int main(int argc, char **argv) {
     double max_width_mu = 0;
 
     //histogram for time dependence
-    const double time_limit = 1.E-8;
+    const double time_limit = 1.E-6;
     const double time_limit_lab = 1.E-8;
 
-    for (int i = 0; i < 1.E8; ++i) {
+    for (int i = 0; i < 1.E7; ++i) {
         double time = doubleRand() * time_limit;
         double func = exp(-time / decay_time);// / decay_time;
         double func_rand = doubleRand();// / decay_time;
@@ -455,7 +416,7 @@ int main(int argc, char **argv) {
             //~~~~~~~~~~~~~~~~~
 
             //muon rotation in magnetic field
-            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag();
+            double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag() * 0;
             timel_mu = time_dec;
 	    if(time_dec > time_limit_lab) continue;
 
