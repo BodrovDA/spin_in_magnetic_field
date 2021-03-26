@@ -30,6 +30,18 @@ void Event::generate_tau_decay(void) {
   } while (rand > width_tau_);
 }
 
+void Event::generate_cascade(int flag) {
+  double width_mu_ = 0;
+  double rand = 0;
+  do{
+    generate_tau_decay();
+    MagFieldRotation_mu(flag);
+    generate_e();
+    width_mu_ = width_mu();
+    rand = doubleRand();
+  } while (rand > width_mu_);
+}
+
 void Event::generate_tau() {
   double energy_cms_tau = beam_.mag() / 2;
   double p_cms_tau = sqrt(energy_cms_tau * energy_cms_tau - m_tau * m_tau);
@@ -110,7 +122,6 @@ double Event::width_tau() {
 }
 
 double Event::width_mu() {
-  mu_rotated_ = mu_;
   HepLorentzVector p_mu_rest(0, 0, 0, m_mu);
   HepLorentzVector mass_spin_mu(mu_rotated_.s().vect() * m_mu, mu_rotated_.s().t() * m_mu);
   HepLorentzVector p_m = p_mu_rest - mass_spin_mu;
@@ -123,4 +134,22 @@ double Event::width_mu() {
   double width_mu = (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * e_.p().vect().mag2()
     / e_.p().e() / (m_mu * m_mu * m_mu * m_mu * m_mu);
   return width_mu;
+}
+
+void Event::MagFieldRotation_mu(int flag) {
+  if(flag) {
+    Hep3Vector spin_mu_vect = mu_.s().vect();
+    HepLorentzVector p_lab_mu_in = mu_.p();
+    p_lab_mu_in.boost(tau_.p().boostVector());
+    p_lab_mu_in.boost(beam_.boostVector());
+    double time_lab_mu_ = time_mu_ * p_lab_mu_in.e() / p_lab_mu_in.mag();
+
+    Hep3Vector p3_lab_mu_out = spin_rotation(spin_mu_vect, p_lab_mu_in, time_lab_mu_);
+    HepLorentzVector p_lab_mu_out(p3_lab_mu_out, p_lab_mu_in.e());
+    HepLorentzVector spin_mu_out(spin_mu_vect, 0);
+    mu_rotated_ = particle(p_lab_mu_out, spin_mu_out);
+
+  } else {
+    mu_rotated_ = mu_;
+  }
 }

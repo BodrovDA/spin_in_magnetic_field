@@ -11,6 +11,7 @@
 #include "MichelFunctions.icc"
 #include "GenFunctions.h"
 #include "Particle.h"
+#include "SpinParticleMagField.h"
 
 class Event {
 public:
@@ -26,6 +27,9 @@ public:
   HepLorentzVector generate_spin_e(HepLorentzVector &p4_mu_e);
   double width_tau();
   double width_mu();
+  
+  void MagFieldRotation_mu(int flag);
+  void generate_cascade(int flag = 0);
 
   //  void dumpToTree();
 

@@ -175,8 +175,8 @@ int main(int argc, char **argv) {
       time_mu = time;
       
       if (i % 100000 == 0) std::cout << "Event number " << i << std::endl;
-      ev.generate_tau_decay();
-      
+      //ev.generate_tau_decay();
+      ev.generate_cascade();
         //generate tau lepton
       //	ev.generate_tau();
 	particle tau = ev.tau();
@@ -268,6 +268,7 @@ int main(int argc, char **argv) {
             //~~~~~~~~~~~~~~~~~
 
             //muon rotation in magnetic field
+	    //	    ev.MagFieldRotation_mu(0);
             double time_dec = time * p_mu_lab_in.e() / p_mu_lab_in.mag() * 0;
             timel_mu = time_dec;
 	    if(time_dec > time_limit_lab) continue;
@@ -290,7 +291,7 @@ int main(int argc, char **argv) {
 
             //generate electron
 
-	    ev.generate_e();
+	    //ev.generate_e();
 	    particle e = ev.e();
 	    double e_energy = e.p().e();
 	    HepLorentzVector spin_e = e.s();
@@ -337,13 +338,13 @@ int main(int argc, char **argv) {
             double scal_e2 = p_e_mu.vect().dot(spin_e_mu.vect()) / p_e_mu.vect().mag() / spin_e_mu.vect().mag();
             double x_e = e_energy / w_e;
             double x0_e = m_e / w_e;
-            double width_mu = ev.width_mu();//= (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * p_e_mu.vect().mag2()
+	    //            double width_mu = ev.width_mu();//= (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * p_e_mu.vect().mag2()
 	      /// p_e_mu.e() / (m_mu * m_mu * m_mu * m_mu * m_mu);
 
             //generate decay spectrum
-            double rand_mu = doubleRand();
-            if (width_mu > max_width_mu) max_width_mu = width_mu;
-            if (rand_mu < width_mu) {
+            //double rand_mu = doubleRand();
+            //if (width_mu > max_width_mu) max_width_mu = width_mu;
+            //if (rand_mu < width_mu) {
 
                 ++j;
 		cos_p_e_p_mu = cos(p_e_mu.vect().angle(p3_mu_lab_out));
@@ -361,7 +362,7 @@ int main(int argc, char **argv) {
                 t1.Fill();
 
 		//}
-        }
+		//}
     }
     std::cout << max_width << " " << max_width_mu << std::endl;
 
