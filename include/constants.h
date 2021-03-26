@@ -29,8 +29,8 @@ const double xi = 1.;
 const double eta = 0;
 
 // not measured yet
-const double xi_p = 1;
-const double xi_pp = xi * xi_p;   
+extern double xi_p;
+extern double xi_pp;
 const double eta_pp = 0;
 const double alpha_p = 0;
 const double beta_p = 0;

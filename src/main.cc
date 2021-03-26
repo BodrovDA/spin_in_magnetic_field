@@ -31,11 +31,29 @@
 #include "SpinParticleMagField.h"
 #include "Event.h"
 
+double xi_p;
+double xi_pp;
 
 int main(int argc, char **argv) {
+  
+  if(argc != 4) return -1;
+  
+  xi_p = atof(argv[1]);
+  xi_pp = xi * xi_p;
 
+  int flag = atoi(argv[2]);
+  int num_of_events = atoi(argv[3]);
+
+  std::string file_name = "data/raw_belle_xip";
+  if(flag) {
+    std::cout << "Start program with xi_p = " << xi_p << ", and magnetic field on "  << std::endl;
+    file_name = file_name + std::string(argv[1]) + "_B.root";
+  } else {
+    std::cout << "Start program with xi_p = " << xi_p << ", and magnetic field off " << std::endl;
+    file_name = file_name + std::string(argv[1]) + "_nB.root";
+  }
+      
   // create file
-  std::string file_name = "data/raw_belle_xip1_B.root";
   TFile f(file_name.c_str(),"recreate");
   TTree t1("t1","tree with raw data from my MC");
 
@@ -89,21 +107,26 @@ int main(int argc, char **argv) {
   t1.Branch("pc_e",&pc_e,"pc_e[4]/D");//    
   t1.Branch("pl_e",&pl_e,"pl_e[4]/D");//
   t1.Branch("s_e",&s_e,"s_e[4]/D");//
-
-
   
   const int charge = -1;  
   const double time_limit = 1.E-8;
   const double time_limit_lab = 1.E-8;
   
-  for (int i = 0; i < 1.E4; ++i) {
-    Event ev(beam, charge, time_limit_lab, generator);
-    ev.generate_time(time_limit);
-    ev.generate_cascade(1);
+  for (int i = 0; i < num_of_events; ++i) {
+    Event ev(beam, charge, time_limit, time_limit_lab, generator);
+    ev.generate_cascade(flag);
 
     time_mu = ev.time_mu();
     timel_mu = ev.time_lab_mu();
     rotation_angle = ev.rotation_angle();
+
+    //~~~~~~~~~~~~~~~~~
+    beam4[0] = beam.x();
+    beam4[1] = beam.y();
+    beam4[2] = beam.z();
+    beam4[3] = beam.e();
+    //~~~~~~~~~~~~~~~~~
+
       
     particle tau = ev.tau();
     HepLorentzVector p_tau_cms = tau.p();

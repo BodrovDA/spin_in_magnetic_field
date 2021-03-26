@@ -15,10 +15,11 @@
 
 class Event {
 public:
-  Event(HepLorentzVector beam, int charge, double time_limit_lab, std::default_random_engine &generator);
+  Event(HepLorentzVector beam, int charge, double time_limit, 
+	double time_limit_lab, std::default_random_engine &generator);
   ~Event();
   
-  void generate_time(double time_limit);
+  void generate_time();
   void generate_tau_decay(void);
   void generate_tau();
   void generate_mu();
@@ -47,6 +48,7 @@ private:
 
   HepLorentzVector beam_;
   int charge_;
+  double time_limit_;
   double time_limit_lab_;
   std::default_random_engine &generator_;
 

@@ -1,19 +1,21 @@
 #include "Event.h"
 
-Event::Event(HepLorentzVector beam, int charge, double time_limit_lab,  std::default_random_engine &generator) 
-  : beam_(beam), charge_(charge), time_limit_lab_(time_limit_lab), generator_(generator) {
+Event::Event(HepLorentzVector beam, int charge, double time_limit, double time_limit_lab,  
+	     std::default_random_engine &generator) 
+  : beam_(beam), charge_(charge), time_limit_(time_limit), 
+    time_limit_lab_(time_limit_lab), generator_(generator) {
 
 
 }
 
 Event::~Event(){};
 
-void Event::generate_time(double time_limit) {
+void Event::generate_time() {
   time_mu_ = 0;
   double func = 0;
   double rand = 0;
   do{
-    time_mu_ = doubleRand() * time_limit;
+    time_mu_ = doubleRand() * time_limit_;
     func = exp(-time_mu_ / decay_time);
     rand = doubleRand();
   } while (rand > func);
@@ -23,6 +25,7 @@ void Event::generate_tau_decay(void) {
   double width_tau_ = 0;
   double rand = 0;
   do{
+    generate_time();
     generate_tau();
     generate_mu();
     width_tau_ = width_tau();
@@ -32,10 +35,10 @@ void Event::generate_tau_decay(void) {
 
 void Event::generate_cascade(int flag) {
   double width_mu_ = 0;
-  double rand = 0;
+  double rand = 1;
   do{
     generate_tau_decay();
-    if(!MagFieldRotation_mu(flag)) continue;
+    if(!MagFieldRotation_mu(flag)){continue;}
     generate_e();
     width_mu_ = width_mu();
     rand = doubleRand();
