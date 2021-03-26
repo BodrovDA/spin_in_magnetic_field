@@ -5,6 +5,6 @@
 #include "ThreeVector.h"
 #include "constants.h"
 
-Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec);
+Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec, double &angle);
 
 #endif

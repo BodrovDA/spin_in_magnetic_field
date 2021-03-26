@@ -50,6 +50,10 @@ const double c = 0;
 const double magnb = 14E9 * m_e / m_mu;
 
 // magnetic field
+const double bfieldc = 1.0 * 10E4;                                                                           
+const double bfieldb = 1.5 * 10;                                                                             
+const double balphac = 10000. / 3. / bfieldc;  
+const double balphab = 10000. / 3. / bfieldb;  
 const Hep3Vector BfieldC(0., 0., 1.);
 const Hep3Vector BfieldB(0., 0., 1.5);
 

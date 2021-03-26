@@ -5,9 +5,10 @@ Tau-lepton decay is generated using Michel parameters notation with possibility 
 TODO:
 
 1) add analysis code
-2) refactor the code
+2) add arguments 
 
 DONE:
 
 1) change the muon spin direction generation
 2) turn on magnetic field
+3) refactor code
