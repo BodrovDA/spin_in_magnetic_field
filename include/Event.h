@@ -18,6 +18,7 @@ public:
   ~Event();
   
   void generate_time(double time_limit);
+  void generate_tau_decay(void);
   void generate_tau();
   void generate_mu();
   HepLorentzVector generate_spin_mu(HepLorentzVector &p4_tau_mu);

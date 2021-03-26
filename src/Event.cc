@@ -19,6 +19,17 @@ void Event::generate_time(double time_limit) {
   } while (rand > func);
 }
 
+void Event::generate_tau_decay(void) {
+  double width_tau_ = 0;
+  double rand = 0;
+  do{
+    generate_tau();
+    generate_mu();
+    width_tau_ = width_tau();
+    rand = doubleRand();
+  } while (rand > width_tau_);
+}
+
 void Event::generate_tau() {
   double energy_cms_tau = beam_.mag() / 2;
   double p_cms_tau = sqrt(energy_cms_tau * energy_cms_tau - m_tau * m_tau);
@@ -78,7 +89,12 @@ void Event::generate_e() {
 }
 
 double Event::width_tau() {
-  return 0;
+  double cost_tau = cos(mu_.p().vect().angle(tau_.s().vect()));
+  double x_mu = mu_.p().e() / w_mu;
+  double x0_mu = m_mu / w_mu;
+  double width_tau = coeff_tau * sqrt(x_mu * x_mu - x0_mu * x0_mu)
+    * (Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau);
+  return width_tau;
 }
 
 double Event::width_mu() {

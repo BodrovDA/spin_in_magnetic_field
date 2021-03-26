@@ -21,7 +21,6 @@
 #include <TTree.h>
 //#include <TBranch.h>
 
-
 // include CLHep
 #include "Particle.h"
 #include "LorentzVector.h"
@@ -169,15 +168,17 @@ int main(int argc, char **argv) {
     const double time_limit = 1.E-7;
     const double time_limit_lab = 1.E-8;
 
-    for (int i = 0; i < 1.E7; ++i) {
+    for (int i = 0; i < 1.E5; ++i) {
       Event ev(beam, -1, generator);
       ev.generate_time(time_limit);
       double time = ev.time_mu();
-        time_mu = time;
-
-        if (i % 100000 == 0) std::cout << "Event number " << i << std::endl;
+      time_mu = time;
+      
+      if (i % 100000 == 0) std::cout << "Event number " << i << std::endl;
+      ev.generate_tau_decay();
+      
         //generate tau lepton
-	ev.generate_tau();
+      //	ev.generate_tau();
 	particle tau = ev.tau();
 	HepLorentzVector p_tau_cms = tau.p();
 	HepLorentzVector spin_tau = tau.s();
@@ -204,7 +205,7 @@ int main(int argc, char **argv) {
         //~~~~~~~~~~~~~~~~~
 
         //generate muon
-	ev.generate_mu();
+	//ev.generate_mu();
         particle mu = ev.mu();
 	HepLorentzVector p_mu_tau = mu.p();
 	HepLorentzVector spin_mu = mu.s();
@@ -242,17 +243,16 @@ int main(int argc, char **argv) {
 
 
 	//	std::cout << Fas(x_mu, x0_mu) << std::endl;
-	double coeff_tau = w_mu*w_mu*w_mu*w_mu / (m_tau*m_tau*m_tau*m_tau) * 24 * 2;
-        double width_tau = coeff_tau * sqrt(x_mu * x_mu - x0_mu * x0_mu) 
-	  * (Fis(x_mu, x0_mu) - Fas(x_mu, x0_mu) * cost_tau);/* +
+	//double width_tau = ev.width_tau();
+/* +
 	     (-Fip(x_mu, x0_mu)  + Fap(x_mu, x0_mu) * cost_tau) * spin_mu.vect().dot(axis_z) 
 	     + Ft1(x_mu, x0_mu) * sint_tau * spin_mu.vect().dot(axis_x)
 	     + Ft2(x_mu, x0_mu) * sint_tau * spin_mu.vect().dot(axis_y));*/
 
         //generate decay spectrum
-        if (width_tau > max_width) max_width = width_tau;
-        double rand_t = doubleRand();
-        if ((rand_t < width_tau)) {
+        //if (width_tau > max_width) max_width = width_tau;
+        //double rand_t = doubleRand();
+        //if ((rand_t < width_tau)) {
 	  cos_p_mu_s_tau = cost_tau;
 	  
 	  // **********
@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
                     std::cout << "ashigara " << ev_number << std::endl;
                 t1.Fill();
 
-	    }
+		//}
         }
     }
     std::cout << max_width << " " << max_width_mu << std::endl;

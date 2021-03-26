@@ -19,6 +19,7 @@ const double w_mu = (m_tau * m_tau + m_mu * m_mu) / 2 / m_tau;
 const double w_e = (m_mu * m_mu + m_e * m_e) / 2 / m_mu;
 const double mu_energy_min = m_mu;
 const double e_energy_min = m_e;
+const double coeff_tau =  w_mu*w_mu*w_mu*w_mu / (m_tau*m_tau*m_tau*m_tau) * 24 * 2;
 
 // Michel parameters
 // already measured
