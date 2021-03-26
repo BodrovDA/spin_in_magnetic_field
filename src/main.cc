@@ -181,7 +181,7 @@ Hep3Vector spin_rotation(Hep3Vector &zeta, HepLorentzVector p, double time_dec){
 }
 
 int main(int argc, char **argv) {
-  std::string file_name = "data/raw_belle_xip1_B.root";
+  std::string file_name = "data/raw_belle_xip1_old.root";
   TFile f(file_name.c_str(),"recreate");
     TTree t1("t1","tree with raw data from my MC");
 
@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
 
             Hep3Vector p3_mu_lab_out = spin_rotation(spin_mu_vect, p_mu_lab_in, time_dec);
             HepLorentzVector p_mu_lab_out(p3_mu_lab_out, p_mu_lab_in.e());
-	    test = cos(p3_mu_lab_out.angle(p_mu_lab_in));
+	    test = p3_mu_lab_out.angle(p_mu_lab_in);
 	    //HepLorentzVector p_mu_lab_out = p_mu_lab_in;//(p3_mu_lab_out, p_mu_lab_in.e());
             //~~~~~~~~~~~~~~~~~
             pl_out_x_mu = p_mu_lab_out.vect().x();
