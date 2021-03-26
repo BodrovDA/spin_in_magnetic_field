@@ -289,15 +289,12 @@ int main(int argc, char **argv) {
             // **********
 
             //generate electron
-            double e_energy = e_energy_min + doubleRand() * (w_e - e_energy_min);
-            double e_p = sqrt(e_energy * e_energy - m_e * m_e);
-            HepLorentzVector p_e_mu = generate_lorentz(e_p, e_energy, generator);
-	    int spin_e_projection = 1 - 2 * (rand() % 2);
-            HepLorentzVector spin_e(spin_e_projection * p_e_mu.x()/p_e_mu.vect().mag(), 
-				    spin_e_projection * p_e_mu.y()/p_e_mu.vect().mag(),
-				    spin_e_projection * p_e_mu.z()/p_e_mu.vect().mag(), 0);
-            particle e(p_e_mu, spin_e);
-	    helicity_e = spin_e_projection;
+
+	    ev.generate_e();
+	    particle e = ev.e();
+	    double e_energy = e.p().e();
+	    HepLorentzVector spin_e = e.s();
+	    HepLorentzVector p_e_mu = e.p();
             //~~~~~~~~~~~~~~~~~
             p_x_e = p_e_mu.vect().x();
             p_y_e = p_e_mu.vect().y();
@@ -317,7 +314,7 @@ int main(int argc, char **argv) {
             //~~~~~~~~~~~~~~~~~
 
             HepLorentzVector spin_e_mu(
-                    spin_e.vect() + p_e_mu.vect().dot(spin_e.vect()) / m_e / (m_e + e_energy) * p_e_mu.vect(),
+				       spin_e.vect() + p_e_mu.vect().dot(spin_e.vect()) / m_e / (m_e + e.p().e()) * p_e_mu.vect(),
                     p_e_mu.vect().dot(spin_e.vect()) / m_e);
             //~~~~~~~~~~~~~~~~~
             sm_x_e = spin_e_mu.vect().x();
@@ -340,8 +337,8 @@ int main(int argc, char **argv) {
             double scal_e2 = p_e_mu.vect().dot(spin_e_mu.vect()) / p_e_mu.vect().mag() / spin_e_mu.vect().mag();
             double x_e = e_energy / w_e;
             double x0_e = m_e / w_e;
-            double width_mu = (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * p_e_mu.vect().mag2()
-                    / p_e_mu.e() / (m_mu * m_mu * m_mu * m_mu * m_mu);
+            double width_mu = ev.width_mu();//= (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * p_e_mu.vect().mag2()
+	      /// p_e_mu.e() / (m_mu * m_mu * m_mu * m_mu * m_mu);
 
             //generate decay spectrum
             double rand_mu = doubleRand();

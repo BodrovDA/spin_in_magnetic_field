@@ -23,6 +23,7 @@ public:
   void generate_mu();
   HepLorentzVector generate_spin_mu(HepLorentzVector &p4_tau_mu);
   void generate_e();
+  HepLorentzVector generate_spin_e(HepLorentzVector &p4_mu_e);
   double width_tau();
   double width_mu();
 
@@ -33,6 +34,7 @@ public:
   inline double time_mu();
   inline particle tau();
   inline particle mu();
+  inline particle e();
 
 private:
 
@@ -43,6 +45,7 @@ private:
   double time_mu_;
   particle tau_;
   particle mu_;
+  particle mu_rotated_;
   particle e_;
 
 };
@@ -55,6 +58,9 @@ inline particle Event::tau() {
 }
 inline particle Event::mu() {
   return mu_;
+}
+inline particle Event::e() {
+  return e_;
 }
 
 

@@ -85,7 +85,19 @@ HepLorentzVector Event::generate_spin_mu(HepLorentzVector &p4_tau_mu){
 }
 
 void Event::generate_e() {
+  double energy_mu_e = e_energy_min + doubleRand() * (w_e - e_energy_min);
+  double p_mu_e = sqrt(energy_mu_e * energy_mu_e - m_e * m_e);
+  HepLorentzVector p4_mu_e = generate_lorentz(p_mu_e, energy_mu_e, generator_);
+  HepLorentzVector spin_e = generate_spin_e(p4_mu_e);
+  e_ = particle(p4_mu_e, spin_e);
+}
 
+HepLorentzVector Event::generate_spin_e(HepLorentzVector &p4_mu_e) { 
+  int spin_e_projection = 1 - 2 * (rand() % 2);
+  HepLorentzVector spin_e(spin_e_projection * p4_mu_e.x()/p4_mu_e.vect().mag(),
+			  spin_e_projection * p4_mu_e.y()/p4_mu_e.vect().mag(),
+			  spin_e_projection * p4_mu_e.z()/p4_mu_e.vect().mag(), 0);
+  return spin_e;
 }
 
 double Event::width_tau() {
@@ -98,5 +110,17 @@ double Event::width_tau() {
 }
 
 double Event::width_mu() {
-  return 0;
+  mu_rotated_ = mu_;
+  HepLorentzVector p_mu_rest(0, 0, 0, m_mu);
+  HepLorentzVector mass_spin_mu(mu_rotated_.s().vect() * m_mu, mu_rotated_.s().t() * m_mu);
+  HepLorentzVector p_m = p_mu_rest - mass_spin_mu;
+  HepLorentzVector spin_e_mu( e_.s().vect() + e_.p().vect().dot(e_.s().vect()) 
+			      / m_e / (m_e + e_.p().e()) * e_.p().vect(),
+			      e_.p().vect().dot(e_.s().vect()) / m_e);
+  HepLorentzVector mass_spin_e_mu(spin_e_mu.vect() * m_e, spin_e_mu.t() * m_e);
+  HepLorentzVector k_m = e_.p() - mass_spin_e_mu;
+  HepLorentzVector q_m = p_mu_rest - e_.p();
+  double width_mu = (q_m.mag2() * p_m.dot(k_m) + 2 * q_m.dot(p_m) * q_m.dot(k_m)) * e_.p().vect().mag2()
+    / e_.p().e() / (m_mu * m_mu * m_mu * m_mu * m_mu);
+  return width_mu;
 }
